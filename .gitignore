@@ -1,0 +1,8 @@
+bin
+build
+buildtest
+log
+*.log
+*.log*
+.cvsignore
+build.properties
