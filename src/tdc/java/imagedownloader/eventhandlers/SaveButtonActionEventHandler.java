@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 
 import tdc.java.imagedownloader.ImageDownloaderApplication;
 import tdc.java.utility.http.FirefoxHTTPRequest;
+import tdc.java.utility.http.HTTPRequest.ResponseHeaderKey;
 
 /**
  * @author Cuong Truong
@@ -71,15 +72,21 @@ public class SaveButtonActionEventHandler implements EventHandler<ActionEvent> {
     try {
       FirefoxHTTPRequest request = new FirefoxHTTPRequest(imageUrl);
       InputStream inputStream = request.getInputStream();
-      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFile));
-      byte[] buffer = new byte[1024];
-      int bytesRead = 0;
       
-      while((bytesRead = inputStream.read(buffer, 0, 1024)) != -1) {
-        bos.write(buffer, 0, bytesRead);
+      if(request.getResponseHeader(ResponseHeaderKey.CONTENT_TYPE) != null && request.getResponseHeader(ResponseHeaderKey.CONTENT_TYPE).contains("image")) {
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(newFile));
+        byte[] buffer = new byte[1024];
+        int bytesRead = 0;
+        
+        while((bytesRead = inputStream.read(buffer, 0, 1024)) != -1) {
+          bos.write(buffer, 0, bytesRead);
+        }
+        
+        bos.close();
+        
+        this.application.getMessageLabelProperty().setValue(imageUrl + " saved successfully");
       }
       
-      bos.close();
       request.close();
     }
     catch(IOException e) {
@@ -88,7 +95,5 @@ public class SaveButtonActionEventHandler implements EventHandler<ActionEvent> {
       
       return;
     }
-    
-    this.application.getMessageLabelProperty().setValue(imageUrl + " saved successfully");
   }
 }
